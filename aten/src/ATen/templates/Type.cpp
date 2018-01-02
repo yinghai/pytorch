@@ -25,9 +25,17 @@ Tensor & Type::copy_(Tensor & self, const Tensor & src, bool async) const {
 
 Tensor Type::copy(const Tensor & src, bool async) const {
   AT_ASSERT(src.defined(), "attempt to copy an undefined tensor");
-  Tensor r = this->tensor(src.sizes());
-  r.copy_(src, async);
-  return r;
+  if (is_sparse()) {
+    auto indices = src._indices();
+    auto values = src._values();
+    auto indices_copy = indices.type().copy(indices, async);
+    auto values_copy = values.type().copy(values, async);
+    return sparse_coo_tensor(indices_copy, values_copy, src.sizes());
+  } else {
+    Tensor r = this->tensor(src.sizes());
+    r.copy_(src, async);
+    return r;
+  }
 }
 
 Type & Type::toBackend(Backend b) const {
