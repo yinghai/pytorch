@@ -154,6 +154,20 @@ if (INTERN_BUILD_ATEN_OPS)
     set(GEN_ROCM_FLAG --rocm)
   endif()
 
+  if(USE_TVM)
+    message("Where am i: ${CMAKE_COMMAND}, ${CMAKE_CURRENT_SOURCE_DIR}, ${CMAKE_CURRENT_BINARY_DIR}")
+  SET(TVM_GEN_COMMAND
+    ${CMAKE_COMMAND} -E env PYTHONPATH=${CMAKE_CURRENT_SOURCE_DIR}/../aten/src/ATen ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/../aten/src/ATen/tvmop/compile.py -o ${CMAKE_CURRENT_BINARY_DIR}/tvmop.so
+  )
+  EXECUTE_PROCESS(
+    COMMAND ${TVM_GEN_COMMAND}
+    RESULT_VARIABLE RETURN_VALUE
+  )
+  if (NOT RETURN_VALUE EQUAL 0)
+    message(FATAL_ERROR "Cannot generate tvm ops")
+  endif()
+  endif()
+
   SET(GEN_COMMAND
       "${PYTHON_EXECUTABLE}" ${CMAKE_CURRENT_LIST_DIR}/../aten/src/ATen/gen.py
       --source-path ${CMAKE_CURRENT_LIST_DIR}/../aten/src/ATen

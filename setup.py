@@ -399,6 +399,8 @@ class build_ext(setuptools.command.build_ext.build_ext):
             report('-- Building NCCL library')
         else:
             report('-- Not using NCCL')
+        if cmake_cache_vars['USE_TVM']:
+            report('-- Using TVM kernel authroing')
         if cmake_cache_vars['USE_DISTRIBUTED']:
             if IS_LINUX:
                 report('-- Building with c10d distributed package ')
