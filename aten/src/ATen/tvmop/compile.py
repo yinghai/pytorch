@@ -57,4 +57,4 @@ if __name__ == "__main__":
         lowered_funcs[get_target("cuda")] = func_list_cuda
     func_binary = tvm.build(lowered_funcs, name="tvmop")
     func_binary.export_library(arguments.target_path)
-    print("TVM ops written to: ".format(arguments.target_path))
+    print("TVM ops written to: {}".format(arguments.target_path))

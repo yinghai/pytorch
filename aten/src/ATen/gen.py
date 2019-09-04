@@ -43,6 +43,10 @@ parser.add_argument(
     '--rocm',
     action='store_true',
     help='reinterpret CUDA as ROCm/HIP and adjust filepaths accordingly')
+parser.add_argument(
+    '--tvm',
+    action='store_true',
+    help='Enable TVM kernel authoring')
 options = parser.parse_args()
 gen_to_source = os.environ.get('GEN_TO_SOURCE')  # update source directly as part of gen
 if not gen_to_source:
@@ -54,7 +58,6 @@ if options.install_dir is not None and not os.path.exists(options.install_dir):
     os.makedirs(options.install_dir)
 if core_install_dir is not None and not os.path.exists(core_install_dir):
     os.makedirs(core_install_dir)
-
 
 class FileManager(object):
     def __init__(self, install_dir=None):
@@ -382,6 +385,7 @@ def generate_outputs():
     declarations = [d
                     for file in cwrap_files
                     for d in cwrap_parser.parse(file)]
+    print(declarations)
 
     declarations += nn_parse.run(nn_files)
     declarations += native_parse.run(native_files)

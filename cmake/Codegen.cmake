@@ -154,6 +154,7 @@ if (INTERN_BUILD_ATEN_OPS)
     set(GEN_ROCM_FLAG --rocm)
   endif()
 
+  set(GEN_TVM_FLAG)
   if(USE_TVM)
     message("Where am i: ${CMAKE_COMMAND}, ${CMAKE_CURRENT_SOURCE_DIR}, ${CMAKE_CURRENT_BINARY_DIR}")
   SET(TVM_GEN_COMMAND
@@ -166,6 +167,7 @@ if (INTERN_BUILD_ATEN_OPS)
   if (NOT RETURN_VALUE EQUAL 0)
     message(FATAL_ERROR "Cannot generate tvm ops")
   endif()
+  set(GEN_TVM_FLAG --tvm)
   endif()
 
   SET(GEN_COMMAND
@@ -173,9 +175,12 @@ if (INTERN_BUILD_ATEN_OPS)
       --source-path ${CMAKE_CURRENT_LIST_DIR}/../aten/src/ATen
       --install_dir ${CMAKE_BINARY_DIR}/aten/src/ATen
       ${GEN_ROCM_FLAG}
+      ${GEN_TVM_FLAG}
       ${cwrap_files}
   )
 
+  message("${GEN_COMMAND}
+        --output-dependencies ${CMAKE_BINARY_DIR}/aten/src/ATen/generated_cpp.txt")
   EXECUTE_PROCESS(
       COMMAND ${GEN_COMMAND}
         --output-dependencies ${CMAKE_BINARY_DIR}/aten/src/ATen/generated_cpp.txt
@@ -199,6 +204,7 @@ if (INTERN_BUILD_ATEN_OPS)
   file(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/aten/src/ATen)
   file(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/aten/src/ATen/core_tmp)
 
+  # Second pass to actually generate the code
   add_custom_command(OUTPUT ${generated_cpp} ${cuda_generated_cpp}
     COMMAND ${GEN_COMMAND}
     DEPENDS ${all_python} ${all_templates} ${cwrap_files} ${core_gen_checked_inputs})

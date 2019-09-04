@@ -17,6 +17,7 @@
 
 # coding: utf-8
 import tvm
+import topi
 from .. import defop, AllTypes
 
 def compute_add(dtype, ndim):
@@ -26,6 +27,30 @@ def compute_add(dtype, ndim):
                     lambda *index: A[index] + B[index], name='C')
     s = tvm.create_schedule(C.op)
     return s, A, B, C
+
+
+def compute_gather(dtype, dim, ndim):
+    input = tvm.placeholder([tvm.var() for _ in range(ndim)], name='input', dtype=dtype)
+    index = tvm.placeholder([tvm.var() for _ in range(ndim)], name='input', dtype="int32")
+
+    assert len(index.shape) == len(input.shape)
+    def c(*indices):
+        indices = list(indices)
+        gathered = index(*indices)
+        indices[dim] = gathered
+        return input(*indices)
+    out = tvm.compute(index.shape, c, tag=topi.tag.ELEMWISE)
+    s = tvm.create_schedule(out.op)
+    return s, input, index, out
+
+
+# non-strided version of gather, specializing dim=0 and rank=[1,6]
+@defop(name="tvm_gather", target="cpu", auto_broadcast=False,
+       dtype=AllTypes, ndim=list(range(1, 6)))
+def tvm_gather(dtype, ndim):
+    s, input, index, output = compute_gather(dtype, 0, ndim)
+    return s, [input, index, output]
+
 
 @defop(name="vadd", target="cpu", auto_broadcast=True,
        dtype=AllTypes, ndim=list(range(1, 6)))
