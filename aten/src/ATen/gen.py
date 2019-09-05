@@ -385,7 +385,6 @@ def generate_outputs():
     declarations = [d
                     for file in cwrap_files
                     for d in cwrap_parser.parse(file)]
-    print(declarations)
 
     declarations += nn_parse.run(nn_files)
     declarations += native_parse.run(native_files)

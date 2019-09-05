@@ -3,6 +3,7 @@
 
 import re
 from code_template import CodeTemplate
+from textwrap import dedent
 
 try:
     import typing  # noqa: F401
@@ -108,6 +109,16 @@ ${return_type} ${Type}::${api_name}(${type_method_formals}) {
     ${named_guard_declaration}
 #endif
     ${device_guard_declaration}
+    ${return_call} at::native::${native_type_method_dispatch}(${native_actuals});
+}
+""")
+NATIVE_DISPATCH_DEFINITION_BACKEND_TVM = CodeTemplate("""\
+${return_type} ${Type}::${api_name}(${type_method_formals}) {
+#ifdef BUILD_NAMEDTENSOR
+    ${named_guard_declaration}
+#endif
+    ${device_guard_declaration}
+    ${tvm_dispatcher}
     ${return_call} at::native::${native_type_method_dispatch}(${native_actuals});
 }
 """)
@@ -577,6 +588,7 @@ OutputDeclaration = NamedTuple('OutputDeclaration', [
     ('device_guard', bool),
     ('with_gil', bool),
     ('deprecated', bool),
+    ('use_tvm', bool),
 ])
 
 FunctionCode = NamedTuple('FunctionCode', [
@@ -1215,6 +1227,7 @@ def create_generic(top_env, declarations):
             device_guard=option.get('device_guard', True),
             with_gil=option.get('with_gil', False),
             deprecated=option['deprecated'],
+            use_tvm=option.get('use_tvm', False),
         )
 
     output_declarations = []  # type: List[OutputDeclaration]
@@ -1620,6 +1633,34 @@ def create_derived(backend_type_env, declarations):
             legacy_th_definitions.append(
                 LEGACY_TH_DEFINITION.substitute(env))
 
+    def gen_tvm_dispatch(env): 
+        #for input in env['native_actuals']:
+        body = dedent("""\
+                if (dim == 1) {
+                  int num_inputs = 2;
+                  Tensor output;
+                  result.resize(index.sizes());
+                  std::vector<int> type_codes;
+                  std::vector<TVMValue> values;
+                  type_codes.resize(num_inputs + 1);
+                  values.resize(num_inputs + 1);
+                  for (size_t i = 0; i < num_inputs + 1; ++i) {
+                     type_codes[i] = kArrayHandle;
+                     values[i].v_handle = const_cast<DLTensor *>(&(args[i].dltensor()));
+                  }
+                  values[0].v_handle = const_cast<DLTensor *>(&at::toDLPack(input)->DLTensor);
+                  values[1].v_handle = const_cast<DLTensor *>(&at::toDLPack(index)->DLTensor); 
+                  values[2].v_handle = const_cast<DLTensor *>(&at::toDLPack(output)->DLTensor); 
+
+                  TVMArgs tvm_args(&values[0], &type_codes[0], num_inputs + 1);
+                  TVMRetValue rv;
+                  GetFunction(module_ptr_, func_name, args).CallPacked(tvm_args, &rv);
+                  return output;
+                }
+               """)
+
+        return body 
+
     def process_native(option):
         # type: (FunctionOption) -> None
         dispatch = option['type_method_definition_dispatch']
@@ -1633,10 +1674,20 @@ def create_derived(backend_type_env, declarations):
                     type_object_declarations.append(
                         NATIVE_DISPATCH_DECLARATION.substitute(env))
                     option['native_type_method_dispatch'] = native_dispatch
-                    type_object_definitions.append(
-                        NATIVE_DISPATCH_DEFINITION_BACKEND.substitute(env))
+                    new_code = ''
+                    p = False
+                    if option['use_tvm'] and backend == 'CPU':
+                        p = True
+                        new_code = NATIVE_DISPATCH_DEFINITION_BACKEND_TVM.substitute(env, tvm_dispatcher=gen_tvm_dispatch(env))
+                        type_object_definitions.append(new_code)
+                    else:
+                        new_code = NATIVE_DISPATCH_DEFINITION_BACKEND.substitute(env)
+                        type_object_definitions.append(new_code)
                     function_registrations.append(
                         BACKEND_FUNCTION_REGISTRATION.substitute(env))
+                    if p:
+                        print("type_object_declaration:\n{}".format(NATIVE_DISPATCH_DECLARATION.substitute(env)))
+                        print("type_object_definitions:\n{}".format(new_code))
 
     for declaration in declarations:
         for option in declaration['options']:

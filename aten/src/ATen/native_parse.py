@@ -415,6 +415,7 @@ def run(paths):
                 declaration['arguments'] = func.get('arguments', arguments)
                 declaration['type_method_definition_dispatch'] = func.get('dispatch', declaration['name'])
                 declaration['python_module'] = func.get('python_module', '')
+                declaration['use_tvm'] = func.get('use_tvm', 0)
                 declarations.append(declaration)
             except Exception as e:
                 msg = '''Exception raised in processing function:

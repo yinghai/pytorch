@@ -3745,6 +3745,7 @@
 
 - func: gather(Tensor self, int dim, Tensor index, *, bool sparse_grad=False) -> Tensor
   variants: method, function
+  use_tvm: 1
   dispatch:
     CPU: gather_cpu
     CUDA: gather_cuda
