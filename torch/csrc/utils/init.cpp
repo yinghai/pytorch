@@ -1,3 +1,4 @@
+#include <ATen/tvmop/TVMOpModule.h>
 #include <ATen/core/ivalue.h>
 #include <torch/csrc/utils/init.h>
 #include <torch/csrc/utils/throughput_benchmark.h>
@@ -53,6 +54,9 @@ void initThroughputBenchmarkBindings(PyObject* module) {
   });
   m.def("_disable_mkldnn_conv", []() {
     at::native::disable_mkldnn_conv.exchange(true);
+  });
+  m.def("_load_tvmops", [](const std::string& path){
+    tvm::runtime::TVMOpModule::Get()->Load(path); 
   });
 }
 

@@ -1652,13 +1652,10 @@ def create_derived(backend_type_env, declarations):
                   for (int i = 0; i < num_inputs + 1; ++i) {
                      type_codes[i] = kArrayHandle;
                   }
-                  printf("FFFFFFFFFFF\\n");
                   values[0].v_handle = const_cast<DLTensor *>(&at::toDLPack(self)->dl_tensor);
                   values[1].v_handle = const_cast<DLTensor *>(&at::toDLPack(index)->dl_tensor); 
-                  printf("GGGGGGG\\n");
                   values[2].v_handle = const_cast<DLTensor *>(&at::toDLPack(output)->dl_tensor); 
 
-                  printf("WTF");
                   TVMArgs tvm_args(&values[0], &type_codes[0], num_inputs + 1);
                   TVMRetValue rv;
                   TVMOpModule::Get()->Call("tvm_gatherdim_0float32_2int64_2float32_2", tvm_args, &rv);
