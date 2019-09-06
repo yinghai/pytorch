@@ -32,6 +32,7 @@ $storage_tensor_headers
 #include <ATen/Config.h>
 $extra_cuda_headers
 $legacy_th_headers
+$tvm_headers
 
 namespace at {
 

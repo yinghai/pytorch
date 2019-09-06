@@ -1635,26 +1635,30 @@ def create_derived(backend_type_env, declarations):
 
     def gen_tvm_dispatch(env): 
         #for input in env['native_actuals']:
+        #import pdb
+        #pdb.set_trace()
+        print(env['native_actuals'])
+        # TODO: make this a template
         body = dedent("""\
                 if (dim == 1) {
                   int num_inputs = 2;
-                  Tensor output;
-                  result.resize(index.sizes());
+                  auto output_ = c10::make_intrusive<TensorImpl, UndefinedTensorImpl>(c10::Storage(caffe2::TypeMeta::Make<float>(), 0, at::getCPUAllocator(), true), CPUTensorId()).release();
+                  auto output = Tensor(c10::intrusive_ptr<TensorImpl, UndefinedTensorImpl>::reclaim(output_));
+                  output.resize_(index.sizes());
                   std::vector<int> type_codes;
                   std::vector<TVMValue> values;
                   type_codes.resize(num_inputs + 1);
                   values.resize(num_inputs + 1);
-                  for (size_t i = 0; i < num_inputs + 1; ++i) {
+                  for (int i = 0; i < num_inputs + 1; ++i) {
                      type_codes[i] = kArrayHandle;
-                     values[i].v_handle = const_cast<DLTensor *>(&(args[i].dltensor()));
                   }
-                  values[0].v_handle = const_cast<DLTensor *>(&at::toDLPack(input)->DLTensor);
-                  values[1].v_handle = const_cast<DLTensor *>(&at::toDLPack(index)->DLTensor); 
-                  values[2].v_handle = const_cast<DLTensor *>(&at::toDLPack(output)->DLTensor); 
+                  values[0].v_handle = const_cast<DLTensor *>(&at::toDLPack(self)->dl_tensor);
+                  values[1].v_handle = const_cast<DLTensor *>(&at::toDLPack(index)->dl_tensor); 
+                  values[2].v_handle = const_cast<DLTensor *>(&at::toDLPack(output)->dl_tensor); 
 
                   TVMArgs tvm_args(&values[0], &type_codes[0], num_inputs + 1);
                   TVMRetValue rv;
-                  GetFunction(module_ptr_, func_name, args).CallPacked(tvm_args, &rv);
+                  TVMOpModule::Get()->Call("tvm_gatherfloat32_2int32_2float32_2", tvm_args, &rv);
                   return output;
                 }
                """)

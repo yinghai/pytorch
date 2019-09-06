@@ -233,7 +233,9 @@ class CMake:
              'ONNX_ML',
              'ONNX_NAMESPACE',
              'ATEN_THREADING',
-             'WERROR')
+             'WERROR',
+             'TVM_PATH',
+             )
         })
 
         for var, val in my_env.items():

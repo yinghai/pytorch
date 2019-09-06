@@ -284,6 +284,22 @@ def generate_storage_type_and_tensor(backend, density, declarations):
     env['legacy_th_declarations'] = th_declarations
     env['legacy_th_definitions'] = th_definitions
 
+    # Add TVM headers if necessary
+    if env['Backend'] == 'CPU' and options.tvm:
+        env['tvm_headers'] = [
+            '',
+            '#include <Aten/Utils.h>',
+            '#include <ATen/dlpack.h>',
+            '#include <ATen/DLConvertor.h>',
+            '#include <ATen/tvmop/TVMOpModule.h>',
+            '#include <tvm/runtime/c_runtime_api.h>',
+            '#include <tvm/runtime/packed_func.h>',
+            '',
+            'using namespace tvm::runtime;',
+        ]
+    else:
+        env['tvm_headers'] = ''
+
     fm = file_manager
     if env['DeviceType'] == 'CUDA':
         fm = cuda_file_manager
