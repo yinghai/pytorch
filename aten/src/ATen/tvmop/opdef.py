@@ -75,6 +75,7 @@ class OpDef:
     def invoke_all(self):
         for each_kwargs in self.arg_combination:
             if (self.attrs_valid(**each_kwargs)):
+                #print(each_kwargs)
                 sch, args = self.func(**each_kwargs)
                 name = self.name \
                     + ''.join(["{}_{}".format(key, each_kwargs[key]) for key in self.attrs]) \

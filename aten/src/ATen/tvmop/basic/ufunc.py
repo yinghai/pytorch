@@ -20,18 +20,9 @@ import tvm
 import topi
 from .. import defop, AllTypes
 
-def compute_add(dtype, ndim):
-    A = tvm.placeholder([tvm.var() for _ in range(ndim)], name='A', dtype=dtype)
-    B = tvm.placeholder([tvm.var() for _ in range(ndim)], name='B', dtype=dtype)
-    C = tvm.compute([tvm.var() for _ in range(ndim)],
-                    lambda *index: A[index] + B[index], name='C')
-    s = tvm.create_schedule(C.op)
-    return s, A, B, C
-
-
 def compute_gather(dtype, dim, ndim):
     input = tvm.placeholder([tvm.var() for _ in range(ndim)], name='input', dtype=dtype)
-    index = tvm.placeholder([tvm.var() for _ in range(ndim)], name='input', dtype="int32")
+    index = tvm.placeholder([tvm.var() for _ in range(ndim)], name='input', dtype="int64")
 
     assert len(index.shape) == len(input.shape)
     def c(*indices):
@@ -44,21 +35,15 @@ def compute_gather(dtype, dim, ndim):
     return s, input, index, out
 
 
+def check_gather_input(dtype, rank, dim):
+    return dim < rank
+
 # non-strided version of gather, specializing dim=0 and rank=[1,6]
 @defop(name="tvm_gather", target="cpu", auto_broadcast=False,
-       dtype=AllTypes, ndim=list(range(1, 6)))
-def tvm_gather(dtype, ndim):
-    s, input, index, output = compute_gather(dtype, 0, ndim)
+       dtype=AllTypes, rank=list(range(1, 6)), dim=list(range(0, 6)),
+       attrs_valid=check_gather_input, attrs=['dim'])
+def tvm_gather(dtype, dim, rank):
+    s, input, index, output = compute_gather(dtype, dim, rank)
     return s, [input, index, output]
 
-
-@defop(name="vadd", target="cpu", auto_broadcast=True,
-       dtype=AllTypes, ndim=list(range(1, 6)))
-def vadd(dtype, ndim):
-    s, A, B, C = compute_add(dtype, ndim)
-    axes = [axis for axis in C.op.axis]
-    fused = s[C].fuse(*axes)
-    s[C].parallel(fused)
-
-    return s, [A, B, C]
 

@@ -288,7 +288,6 @@ def generate_storage_type_and_tensor(backend, density, declarations):
     if env['Backend'] == 'CPU' and options.tvm:
         env['tvm_headers'] = [
             '',
-            '#include <Aten/Utils.h>',
             '#include <ATen/dlpack.h>',
             '#include <ATen/DLConvertor.h>',
             '#include <ATen/tvmop/TVMOpModule.h>',

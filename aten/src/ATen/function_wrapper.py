@@ -1640,7 +1640,7 @@ def create_derived(backend_type_env, declarations):
         print(env['native_actuals'])
         # TODO: make this a template
         body = dedent("""\
-                if (dim == 1) {
+                if (dim == 0) {
                   int num_inputs = 2;
                   auto output_ = c10::make_intrusive<TensorImpl, UndefinedTensorImpl>(c10::Storage(caffe2::TypeMeta::Make<float>(), 0, at::getCPUAllocator(), true), CPUTensorId()).release();
                   auto output = Tensor(c10::intrusive_ptr<TensorImpl, UndefinedTensorImpl>::reclaim(output_));
@@ -1652,13 +1652,16 @@ def create_derived(backend_type_env, declarations):
                   for (int i = 0; i < num_inputs + 1; ++i) {
                      type_codes[i] = kArrayHandle;
                   }
+                  printf("FFFFFFFFFFF\\n");
                   values[0].v_handle = const_cast<DLTensor *>(&at::toDLPack(self)->dl_tensor);
                   values[1].v_handle = const_cast<DLTensor *>(&at::toDLPack(index)->dl_tensor); 
+                  printf("GGGGGGG\\n");
                   values[2].v_handle = const_cast<DLTensor *>(&at::toDLPack(output)->dl_tensor); 
 
+                  printf("WTF");
                   TVMArgs tvm_args(&values[0], &type_codes[0], num_inputs + 1);
                   TVMRetValue rv;
-                  TVMOpModule::Get()->Call("tvm_gatherfloat32_2int32_2float32_2", tvm_args, &rv);
+                  TVMOpModule::Get()->Call("tvm_gatherdim_0float32_2int64_2float32_2", tvm_args, &rv);
                   return output;
                 }
                """)

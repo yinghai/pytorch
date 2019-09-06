@@ -47,6 +47,7 @@ if __name__ == "__main__":
         for sch, args, name in operator_def.invoke_all():
             if tvm.module.enabled(get_target(operator_def.target)):
                 func_list = func_list_llvm if operator_def.target == "cpu" else func_list_cuda
+                print(name)
                 func_lower = tvm.lower(sch, args,
                                        name=name,
                                        binds=operator_def.get_binds(args))

@@ -143,6 +143,7 @@ if (USE_TVM)
   list(APPEND ATen_CPU_INCLUDE ${TVM_PATH}/3rdparty/dlpack/include)
   list(APPEND ATen_CPU_INCLUDE ${TVM_PATH}/3rdparty/dlpack/include)
   list(APPEND ATen_CPU_INCLUDE ${TVM_PATH}/3rdparty/dmlc-core/include)
+  #file(COPY ${TVM_PATH}/build/libtvm_runtime.dylib DESTINATION ${CMAKE_BINARY_DIR}/lib)
   list(APPEND ATen_CPU_DEPENDENCY_LIBS ${TVM_PATH}/build/libtvm_runtime.dylib)
 ENDIF()
 
