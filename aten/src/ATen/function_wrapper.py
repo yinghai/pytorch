@@ -1640,6 +1640,9 @@ def create_derived(backend_type_env, declarations):
         print(env['native_actuals'])
         # TODO: make this a template
         body = dedent("""\
+                if (dim == -1) {
+                  TVMOpModule::Get()->Load("dummy");
+                }
                 if (dim == 0) {
                   int num_inputs = 2;
                   auto output_ = c10::make_intrusive<TensorImpl, UndefinedTensorImpl>(c10::Storage(caffe2::TypeMeta::Make<float>(), 0, at::getCPUAllocator(), true), CPUTensorId()).release();

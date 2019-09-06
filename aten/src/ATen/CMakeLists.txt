@@ -81,9 +81,6 @@ FILE(GLOB native_sparse_hip_cpp "native/sparse/hip/*.cpp")
 FILE(GLOB native_quantized_hip_hip "native/quantized/hip/*.hip")
 FILE(GLOB native_quantized_hip_cpp "native/quantized/hip/*.cpp")
 
-FILE(GLOB tvm_h "tvmop/*.h")
-FILE(GLOB tvm_cpp "tvmop/*.cpp")
-
 add_subdirectory(quantized)
 set(all_cpu_cpp ${base_cpp} ${ATen_CORE_SRCS} ${native_cpp} ${native_sparse_cpp} ${native_quantized_cpp} ${native_mkl_cpp} ${native_mkldnn_cpp} ${generated_cpp} ${ATen_CPU_SRCS} ${ATen_QUANTIZED_SRCS} ${cpu_kernel_cpp})
 if(AT_MKL_ENABLED)
@@ -91,9 +88,6 @@ if(AT_MKL_ENABLED)
 endif()
 if(AT_MKLDNN_ENABLED)
   set(all_cpu_cpp ${all_cpu_cpp} ${mkldnn_cpp})
-endif()
-if (USE_TVM)
-  set(all_cpu_cpp ${all_cpu_cpp} ${tvm_cpp})
 endif()
 
 if(USE_CUDA AND USE_ROCM)
@@ -138,7 +132,6 @@ ENDIF()
 
 # TVM tensor authoring
 if (USE_TVM) 
-  message("Adding TVM header include path: ${TVM_PATH}")
   list(APPEND ATen_CPU_INCLUDE ${TVM_PATH}/include)
   list(APPEND ATen_CPU_INCLUDE ${TVM_PATH}/3rdparty/dlpack/include)
   list(APPEND ATen_CPU_INCLUDE ${TVM_PATH}/3rdparty/dlpack/include)

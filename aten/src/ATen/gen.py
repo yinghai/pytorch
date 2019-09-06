@@ -290,7 +290,7 @@ def generate_storage_type_and_tensor(backend, density, declarations):
             '',
             '#include <ATen/dlpack.h>',
             '#include <ATen/DLConvertor.h>',
-            '#include <ATen/tvmop/TVMOpModule.h>',
+            '#include <c10/tvmop/TVMOpModule.h>',
             '#include <tvm/runtime/c_runtime_api.h>',
             '#include <tvm/runtime/packed_func.h>',
             '',

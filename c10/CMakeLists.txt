@@ -34,6 +34,10 @@ file(GLOB C10_SRCS
         macros/*.cpp
         util/*.cpp
         )
+file(GLOB C10_TVM_SRC tvmop/*.cpp)
+if(USE_TVM) 
+  set(C10_SRCS ${C10_SRCS} ${C10_TVM_SRC})
+endif()
 file(GLOB_RECURSE C10_ALL_TEST_FILES test/*.cpp)
 file(GLOB_RECURSE C10_HEADERS *.h)
 add_library(c10 ${C10_SRCS} ${C10_HEADERS})
@@ -76,6 +80,17 @@ target_include_directories(
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../>
     $<BUILD_INTERFACE:${CMAKE_BINARY_DIR}>
     $<INSTALL_INTERFACE:include>)
+if(USE_TVM)
+  message("Adding TVM header include path: ${TVM_PATH}")
+  set(TVM_INCLUDE)
+  list(APPEND TVM_INCLUDE ${TVM_PATH}/include)
+  list(APPEND TVM_INCLUDE ${TVM_PATH}/3rdparty/dlpack/include)
+  list(APPEND TVM_INCLUDE ${TVM_PATH}/3rdparty/dlpack/include)
+  list(APPEND TVM_INCLUDE ${TVM_PATH}/3rdparty/dmlc-core/include)
+  target_include_directories(c10 PRIVATE ${TVM_INCLUDE})
+  set(TVM_LIB ${TVM_PATH}/build/libtvm_runtime.dylib)
+  target_link_libraries(c10 PUBLIC ${TVM_LIB})
+endif()
 
 add_subdirectory(test)
 
