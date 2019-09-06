@@ -1,5 +1,6 @@
 #ifndef TVM_OP_MODULE_H
 #define TVM_OP_MODULE_H
+#include <c10/macros/Macros.h>
 #include <mutex>
 
 namespace tvm {
@@ -8,17 +9,14 @@ namespace runtime {
 class Module;
 class TVMArgs;
 class TVMRetValue;
-class TVMOpModule {
+class C10_API TVMOpModule {
  public:
   // Load TVM operators binary
   void Load(const std::string& filepath);
 
   void Call(const std::string& fname, const TVMArgs& args, TVMRetValue* rv);
 
-  static TVMOpModule* Get() {
-    static TVMOpModule inst;
-    return &inst;
-  }
+  static TVMOpModule* Get();
 
   private:
   std::mutex mutex_;

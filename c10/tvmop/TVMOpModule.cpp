@@ -14,6 +14,11 @@ void TVMOpModule::Load(const std::string& filepath) {
   *module_ptr_ = module;
 }
 
+TVMOpModule* TVMOpModule::Get() {
+  static TVMOpModule inst;
+  return &inst;
+}
+
 void TVMOpModule::Call(
     const std::string& fname,
     const TVMArgs& args,
