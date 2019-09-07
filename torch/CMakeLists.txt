@@ -249,6 +249,10 @@ if (USE_NCCL)
     endif()
 endif()
 
+if (USE_TVM) 
+  list(APPEND TORCH_PYTHON_COMPILE_DEFINITIONS USE_TVM)
+endif()
+
 # In the most recent CMake versions, a new 'TRANSFORM' subcommand of 'list' allows much of the boilerplate of defining the lists
 # of type stub files to be omitted.
 # For comptability with older CMake versions, we omit it for now, but leave it as a comment in case comptability with the older
@@ -377,3 +381,6 @@ if (NOT TORCH_PYTHON_LINK_FLAGS STREQUAL "")
 endif()
 
 install(TARGETS torch_python DESTINATION "${TORCH_INSTALL_LIB_DIR}")
+if(USE_TVM)
+  install(FILES ${CMAKE_BINARY_DIR}/tvmop.so DESTINATION "${TORCH_INSTALL_LIB_DIR}")
+endif()

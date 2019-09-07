@@ -40,7 +40,7 @@ def check_gather_input(dtype, rank, dim):
 
 # non-strided version of gather, specializing dim=0 and rank=[1,6]
 @defop(name="tvm_gather", target="cpu", auto_broadcast=False,
-       dtype=AllTypes, rank=list(range(1, 6)), dim=list(range(0, 6)),
+       dtype=AllTypes, rank=list(range(1, 4)), dim=list(range(0, 3)),
        attrs_valid=check_gather_input, attrs=['dim'])
 def tvm_gather(dtype, dim, rank):
     s, input, index, output = compute_gather(dtype, dim, rank)

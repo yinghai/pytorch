@@ -9,7 +9,9 @@ USE_TVM=ON BUILD_CAFFE2_OPS=OFF USE_QNNPACK=OFF USE_FBGEMM=OFF TVM_PATH=/Users/y
 # Test
 ```
 import torch
-torch._C._load_tvmops('/Users/yinghai/pytorch/build/caffe2/tvmop.so')
+from torch.utils.tvmops import load_tvmops
+
+load_tvmops()
 input = torch.tensor([[1, 2], [3, 4]], dtype=torch.float)
 index = torch.tensor([[0, 0], [1, 0]])
 dim = 1
