@@ -1251,7 +1251,7 @@ def create_generic(top_env, declarations):
     return output_declarations
 
 
-def create_derived(backend_type_env, declarations):
+def create_derived(backend_type_env, declarations, tvm_specs=None):
     # type: (Environment, List[FunctionOption]) -> Tuple[List[str], List[str], List[str], List[str], List[str]]
     type_object_declarations = []  # type: List[str]
     type_object_definitions = []  # type: List[str]
@@ -1638,6 +1638,10 @@ def create_derived(backend_type_env, declarations):
         #import pdb
         #pdb.set_trace()
         print(env['native_actuals'])
+        tvm_spec = tvm_specs[env['name']]
+        kwargs = tvm_spec['kwargs']
+        print(kwargs.keys())
+
         # TODO: make this a template
         body = dedent("""\
                 if (dim == 1) {
@@ -1680,7 +1684,7 @@ def create_derived(backend_type_env, declarations):
                     option['native_type_method_dispatch'] = native_dispatch
                     new_code = ''
                     p = False
-                    if option['use_tvm'] and backend == 'CPU':
+                    if tvm_specs and option['name'] in tvm_specs and backend == 'CPU':
                         p = True
                         new_code = NATIVE_DISPATCH_DEFINITION_BACKEND_TVM.substitute(env, tvm_dispatcher=gen_tvm_dispatch(env))
                         type_object_definitions.append(new_code)

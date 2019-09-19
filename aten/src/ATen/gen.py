@@ -11,6 +11,7 @@ sys.path.append(path.dirname(path.abspath(__file__)))
 import cwrap_parser
 import nn_parse
 import native_parse
+import tvm_spec_parse
 import preprocess_declarations
 import function_wrapper
 
@@ -215,7 +216,7 @@ def format_yaml(data):
     return yaml.dump(data, default_flow_style=False, Dumper=noalias_dumper, width=float('Inf'))
 
 
-def generate_storage_type_and_tensor(backend, density, declarations):
+def generate_storage_type_and_tensor(backend, density, declarations, tvm_specs):
     env = {}
     density_tag = density if density != 'Dense' else ''
     env['Density'] = density
@@ -277,7 +278,7 @@ def generate_storage_type_and_tensor(backend, density, declarations):
         env['allocator'] = 'getCPUAllocator()'
 
     declarations, definitions, registrations, th_declarations, th_definitions = function_wrapper.create_derived(
-        env, declarations)
+        env, declarations, tvm_specs)
     env['type_derived_method_declarations'] = declarations
     env['type_derived_method_definitions'] = definitions
     env['function_registrations'] = registrations
@@ -396,6 +397,7 @@ def generate_outputs():
     cwrap_files = filter_by_extension(options.files, '.cwrap')
     nn_files = filter_by_extension(options.files, 'nn.yaml', '.h')
     native_files = filter_by_extension(options.files, 'native_functions.yaml')
+    tvm_files = filter_by_extension(options.files, 'tvm_spec.yaml')
 
     declarations = [d
                     for file in cwrap_files
@@ -403,6 +405,7 @@ def generate_outputs():
 
     declarations += nn_parse.run(nn_files)
     declarations += native_parse.run(native_files)
+    tvm_specs = tvm_spec_parse.run(tvm_files)
     declarations = preprocess_declarations.run(declarations)
 
     # note: this will fill in top_env['type/tensor_method_declarations/definitions']
@@ -421,7 +424,7 @@ def generate_outputs():
                         if 'Dimname' not in decl['schema_string']]
 
     for backend, density in iterate_types():
-        generate_storage_type_and_tensor(backend, density, declarations)
+        generate_storage_type_and_tensor(backend, density, declarations, tvm_specs)
 
     core_files = {
         'Tensor.h': TENSOR_H,

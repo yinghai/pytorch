@@ -157,12 +157,13 @@ if (INTERN_BUILD_ATEN_OPS)
   set(GEN_TVM_FLAG)
   if(USE_TVM)
   SET(TVM_GEN_COMMAND
-    ${CMAKE_COMMAND} -E env PYTHONPATH=${CMAKE_CURRENT_SOURCE_DIR}/../aten/src/ATen ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/../aten/src/ATen/tvmop/compile.py -o ${CMAKE_BINARY_DIR}/tvmop.so
+    ${CMAKE_COMMAND} -E env PYTHONPATH=${CMAKE_CURRENT_SOURCE_DIR}/../aten/src/ATen ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/../aten/src/ATen/tvmop/compile.py -o ${CMAKE_BINARY_DIR}/tvmop.so -t ${CMAKE_BINARY_DIR}/tvm_spec.yaml
   )
   EXECUTE_PROCESS(
     COMMAND ${TVM_GEN_COMMAND}
     RESULT_VARIABLE RETURN_VALUE
   )
+  list(APPEND cwrap_files ${CMAKE_BINARY_DIR}/tvm_spec.yaml)
   if (NOT RETURN_VALUE EQUAL 0)
     message(FATAL_ERROR "Cannot generate tvm ops")
   endif()

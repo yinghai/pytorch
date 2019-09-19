@@ -68,6 +68,7 @@ class OpDef:
         self.name = name
         self.target = target
         self.auto_broadcast = auto_broadcast
+        self.kwargs = kwargs
 
     def __call__(self, *args, **kwargs):
         return self.func(*args, **kwargs)
@@ -75,18 +76,20 @@ class OpDef:
     def invoke_all(self):
         for each_kwargs in self.arg_combination:
             if (self.attrs_valid(**each_kwargs)):
-                #print(each_kwargs)
                 sch, args = self.func(**each_kwargs)
                 name = self.name \
                     + ''.join(["{}_{}".format(key, each_kwargs[key]) for key in self.attrs]) \
                     + ''.join(["%s_%d" % (arg.dtype, len(arg.shape)) for arg in args])
-                yield sch, args, name
+                yield sch, args, name, each_kwargs
 
     def get_binds(self, args):
         if self.auto_broadcast:
             return {arg: tvm.decl_buffer(arg.shape, arg.dtype, buffer_type="auto_broadcast")
                     for arg in args}
         return None
+
+    def get_kwargs(self):
+        return self.kwargs
 
 
 def defop(name, target=None, auto_broadcast=False, **kwargs):
